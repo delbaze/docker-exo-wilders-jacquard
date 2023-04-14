@@ -6,7 +6,7 @@ import NoteResolver from "./resolvers/note.resolver";
 import WilderResolver from "./resolvers/wilder.resolver";
 import { ApolloServer } from "@apollo/server";
 import { buildSchema } from "type-graphql";
-import { startStandaloneServer } from "@apollo/server/standalone";
+// import { startStandaloneServer } from "@apollo/server/standalone";
 
 import { expressMiddleware } from "@apollo/server/express4";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
@@ -31,17 +31,15 @@ const start = async () => {
     schema,
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
   });
-  // const { url } = await startStandaloneServer(server, {
-  //   listen: { port: 4000 },
-  // });
-  // console.log(`🚀  Server ready at: ${url}`);
 
   await server.start();
 
+  //une fois dockerisé, il peut y avoir un soucis avec les cors, je passe donc le projet avec le middleware d'express pour injecter la notion de "cors" à l'aide la librairie suivante : https://www.npmjs.com/package/cors
+  //le startStandaloneServer ne permet pas l'injection de cors comme stipulé dans la doc ici :  https://www.apollographql.com/docs/apollo-server/security/cors/#configuring-cors-options-for-apollo-server
   app.use(
     "/graphql",
     cors<cors.CorsRequest>({
-      origin: ["http://localhost:3000", "https://studio.apollographql.com"],
+      origin: ["http://localhost:3000", "https://studio.apollographql.com"], //je permets l'application React et le studio d'apollo à accéder au serveur Apollo
     }),
     json(),
     expressMiddleware(server)
