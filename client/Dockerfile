@@ -7,7 +7,7 @@ WORKDIR /app
 COPY public public
 COPY package.json ./
 COPY tsconfig.json ./
-
+COPY .env ./
 RUN npm install
 
 COPY setup.js ./
