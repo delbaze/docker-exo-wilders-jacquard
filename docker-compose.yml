@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  client:
+    build: ./client
+    volumes:
+      - ./client/src:/app/src
+    ports:
+      - 3000:3000
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - NODE_ENV=development
+  server:
+    build: ./server
+    # command: sh -c "npm start"
+    environment:
+      - PORT=4000
+    volumes:
+      - ./server/src:/app/src
+    ports:
+      - 4000:4000
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    image: postgres
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d wilders -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: wilders
+    ports:
+      - 5433:5432
+    volumes:
+      - wilders-data:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer
+    depends_on:
+      - db
+    restart: always
+    ports:
+      - 8080:8080
+
+volumes:
+  wilders-data:
